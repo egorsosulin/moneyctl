@@ -10,6 +10,7 @@ Usage:
 
 Invest Reports:
   assets
+  cash
   part
   profit
 
@@ -521,6 +522,47 @@ def invest_assets_report(bean):
     print(table)
 
 
+def invest_cash_report(bean):
+    q = '''
+        SELECT
+            account,
+            SUM(number) as sum
+        WHERE
+            account ~ "Assets:Инвестиции" AND currency = "RUB"
+    '''
+
+    table = BeautifulTable(maxwidth=1000)
+
+    currency_header = colored("ACCOUNT", attrs=['bold'])
+    position_header = colored("POSITION RUB", attrs=['bold'])
+
+    table.columns.header = [currency_header,position_header]
+    table.columns.alignment[currency_header] = BeautifulTable.ALIGN_LEFT
+    table.columns.alignment[position_header] = BeautifulTable.ALIGN_RIGHT
+    table.set_style(BeautifulTable.STYLE_MARKDOWN)
+
+
+    total = 0
+
+    rows = bean.query(q)
+    for row in rows:
+        account = str(row.account).replace('Assets:Инвестиции:', '').replace(':RUB', '')
+        position = float(row.sum)
+
+        position_str = colored(f'{int(position):_} RUB')
+        table.rows.append([account, position_str])
+
+        total += position
+
+    total_str = colored('TOTAL', attrs=['bold'])
+    total_position_str = colored(f'{int(total):_} RUB', attrs=['bold'])
+
+    table.rows.append(['', ''])
+    table.rows.append([total_str, total_position_str])
+
+    print('')
+    print(table)
+
 
 if __name__ == "__main__":
     args = docopt(__doc__)
@@ -551,3 +593,6 @@ if __name__ == "__main__":
 
     elif args['invest'] and args['<report>'] == 'assets':
         invest_assets_report(bean)
+
+    elif args['invest'] and args['<report>'] == 'cash':
+        invest_cash_report(bean)
