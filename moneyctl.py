@@ -394,6 +394,7 @@ def invest_part_report(bean):
     q = '''
         SELECT
 	    currency,
+	    SUM(number) as num,
             SUM(number) * FIRST(GETPRICE(currency, "RUB", TODAY())) as sum
 	WHERE
 	    account ~ "Assets:Инвестиции" AND currency != "RUB"
@@ -402,23 +403,28 @@ def invest_part_report(bean):
 
     total = 0
     currencies = {}
+    currencies_num = {}
 
     rows = bean.query(q)
     for row in rows:
         currency = str(row.currency)
         sum = float(row.sum)
+        number = int(row.num)
 
         total += sum
         currencies[currency] = sum
+        currencies_num[currency] = number
 
     table = BeautifulTable(maxwidth=1000)
 
     currency_header = colored("CURRENCY", attrs=['bold'])
+    assets_header = colored("ASSETS", attrs=['bold'])
     position_header = colored("TOTAL RUB", attrs=['bold'])
     percent_header = colored("PART", attrs=['bold'])
 
-    table.columns.header = [currency_header,position_header, percent_header]
+    table.columns.header = [currency_header, assets_header ,position_header, percent_header]
     table.columns.alignment[currency_header] = BeautifulTable.ALIGN_LEFT
+    table.columns.alignment[assets_header] = BeautifulTable.ALIGN_RIGHT
     table.columns.alignment[position_header] = BeautifulTable.ALIGN_RIGHT
     table.columns.alignment[percent_header] = BeautifulTable.ALIGN_RIGHT
     table.set_style(BeautifulTable.STYLE_MARKDOWN)
@@ -430,7 +436,7 @@ def invest_part_report(bean):
         position_str = colored(f'{position:_} RUB', attrs=['dark'])
         percent_str = f'{percent:.2f} %'
 
-        table.rows.append([currency, position_str, percent_str])
+        table.rows.append([currency, currencies_num[currency], position_str, percent_str])
 
     print('')
     print(table)
@@ -474,11 +480,13 @@ def invest_assets_report(bean):
     table = BeautifulTable(maxwidth=1000)
 
     account_header = colored("ACCOUNT", attrs=['bold'])
+    assets_header = colored("ASSETS", attrs=['bold'])
     position_rub_header = colored("POSITION RUB", attrs=['bold'])
     position_usd_header = colored("POSITION USD", attrs=['bold'])
 
-    table.columns.header = [account_header, position_rub_header, position_usd_header]
+    table.columns.header = [account_header, assets_header, position_rub_header, position_usd_header]
     table.columns.alignment[account_header] = BeautifulTable.ALIGN_LEFT
+    table.columns.alignment[assets_header] = BeautifulTable.ALIGN_RIGHT
     table.columns.alignment[position_rub_header] = BeautifulTable.ALIGN_RIGHT
     table.columns.alignment[position_usd_header] = BeautifulTable.ALIGN_RIGHT
     table.set_style(BeautifulTable.STYLE_MARKDOWN)
@@ -489,10 +497,13 @@ def invest_assets_report(bean):
     for account in accounts:
         account_rub_get = 0
         account_usd_get = 0
+        position_number = 0
 
         for i in range(accounts[account].qsize()):
             bond = accounts[account].get()
             rub_diff = bond['price_rub_today'] - bond['price_rub_date']
+
+            position_number += 1
 
             # считаем профит в рублях
             rub_profit = rub_diff
@@ -508,15 +519,15 @@ def invest_assets_report(bean):
         account_rub_get_str = f'{int(account_rub_get):_} RUB'
         account_usd_get_str = f'{int(account_usd_get):_} USD'
 
-        table.rows.append([account, account_rub_get_str,account_usd_get_str])
+        table.rows.append([account, position_number, account_rub_get_str,account_usd_get_str])
 
     total_rub_get_str = colored(f'{int(total_rub_get):_} RUB', attrs=['bold'])
     total_usd_get_str = colored(f'{int(total_usd_get):_} USD', attrs=['bold'])
 
     total_str = colored('TOTAL', attrs=['bold'])
 
-    table.rows.append(['', '', ''])
-    table.rows.append([total_str, total_rub_get_str, total_usd_get_str])
+    table.rows.append(['', '', '', ''])
+    table.rows.append([total_str, '', total_rub_get_str, total_usd_get_str])
 
     print('')
     print(table)
