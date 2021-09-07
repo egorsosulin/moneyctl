@@ -3,6 +3,7 @@
 """MoneyCTL.
 
 Usage:
+  moneyctl.py add <template> [options]
   moneyctl.py expenses [options]
   moneyctl.py income [options]
   moneyctl.py assets [options]
@@ -15,16 +16,19 @@ Invest Reports:
   profit
 
 Options:
-  -y, --year YEAR             Set year for report
-  -m, --month MONTH           Set month for report
-  -b, --begin BEGIN_DATE      Set begin of range for report (example: 2021-12-31)
-  -e, --end END_DATE          Set end of range for report
+  -e, --edit                  Edit file after add
+  -d, --date DATE             Set date for add option
+  -c, --cost NUMBER           Set cost for add option
+  -Y, --year YEAR             Set year for report
+  -M, --month MONTH           Set month for report
+  -B, --begin BEGIN_DATE      Set begin of range for report (example: 2021-12-31)
+  -E, --end END_DATE          Set end of range for report
   -j, --journal JOURNAL_FILE  Set journal file to load
 
 """
 
 
-
+import os
 import sys
 import queue
 from docopt import docopt
@@ -36,7 +40,9 @@ from beautifultable import BeautifulTable
 from beancount.query.query import run_query
 
 
-DEFAULT_JOURNAL_FILE = '/home/user/documents/beancount/main.bean'
+DEFAULT_JOURNAL_DIR = '/home/user/documents/beancount'
+DEFAULT_JOURNAL_FILE = DEFAULT_JOURNAL_DIR + '/main.bean'
+DEFAULT_TEMPLATE_DIR = DEFAULT_JOURNAL_DIR + '/templates'
 
 
 class BeancountWrapper():
@@ -47,6 +53,12 @@ class BeancountWrapper():
         output = run_query(self.entries, self.options, query_text)
         return output[1]
 
+
+def get_date(date_str):
+    if date_str == None:
+        return date.today()
+    else:
+        return date.fromisoformat(date_str)
 
 
 def date_range(args):
@@ -575,16 +587,65 @@ def invest_cash_report(bean):
     print(table)
 
 
+def add_transaction(template_name, date, cost):
+
+    date_str = date.strftime('%Y-%m-%d')
+    date_year = str(date.year)
+
+    template_data = ''
+    template_file = DEFAULT_TEMPLATE_DIR + '/' + template_name + '.bean'
+
+    if os.path.exists(template_file):
+        with open(template_file, 'r') as file_object:
+            template_data = file_object.read().format(DATE=date_str, COST=cost)
+    else:
+        print('Error: Template does not exist: ' + template_name)
+        exit(1)
+
+    journal_date_data = ''
+    journal_date_dir  = DEFAULT_JOURNAL_DIR + '/journals/' + date_year
+    journal_date_file = journal_date_dir + '/' + date_str + '.bean'
+
+    if os.path.exists(journal_date_file):
+        with open(journal_date_file, 'r') as file_object:
+            journal_date_data = file_object.read()
+
+
+    new_journal_date_data = journal_date_data + '\n' + template_data
+
+    if not os.path.exists(journal_date_dir):
+        os.makedirs(journal_date_dir)
+
+    with open(journal_date_file, 'w') as file_object:
+        file_object.write(new_journal_date_data)
+
+    return journal_date_file
+
+
 if __name__ == "__main__":
     args = docopt(__doc__)
     # print(args)
 
-    begin, end = date_range(args)
+    if args['add']:
+        date = get_date(args['--date'])
+
+        if args['--cost'] is None:
+            print('Error: Cost does not specify')
+            exit(1)
+
+        journal_date_file = add_transaction(args['<template>'], date, args['--cost'])
+
+        if args['--edit']:
+            editor = os.environ['EDITOR']
+            os.execvp(editor, [editor, journal_date_file])
+
+        exit(0)
 
     journal = DEFAULT_JOURNAL_FILE
     if args['--journal']:
         journal = args['--journal']
-    
+
+    begin, end = date_range(args)
     bean = BeancountWrapper(journal)
 
     if args['expenses']:
