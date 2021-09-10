@@ -8,6 +8,7 @@ docopt = "*"
 beancount = "*"
 beautifultable = "*"
 termcolor = "*"
+investpy = "*"
 
 [dev-packages]
 

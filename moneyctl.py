@@ -8,6 +8,7 @@ Usage:
   moneyctl.py income [options]
   moneyctl.py assets [options]
   moneyctl.py invest <report> [options]
+  moneyctl.py download-prices [options]
 
 Invest Reports:
   assets
@@ -31,6 +32,8 @@ Options:
 import os
 import sys
 import queue
+import investpy
+import datetime
 from docopt import docopt
 from datetime import date
 from beancount import loader
@@ -43,6 +46,7 @@ from beancount.query.query import run_query
 DEFAULT_JOURNAL_DIR = '/home/user/documents/beancount'
 DEFAULT_JOURNAL_FILE = DEFAULT_JOURNAL_DIR + '/main.bean'
 DEFAULT_TEMPLATE_DIR = DEFAULT_JOURNAL_DIR + '/templates'
+DEFAULT_PRICES_DIR = DEFAULT_JOURNAL_DIR + '/prices'
 
 
 class BeancountWrapper():
@@ -622,9 +626,50 @@ def add_transaction(template_name, date, cost):
     return journal_date_file
 
 
+def download_prices(date):
+
+    previous_date = date - datetime.timedelta(days=1)
+    date_year = str(date.year)
+    date_str = date.strftime('%Y-%m-%d')
+
+    prices = {}
+
+    etfs = ['FXUS', 'FXIM', 'FXRU', 'FXIT', 'FXRB']
+    currency_crosses = ['USD/RUB']
+
+    for etf in etfs:
+        ticker = investpy.search_quotes(text=etf, products=['etfs'], countries=['russia'], n_results=5)
+        data = ticker[-1].retrieve_historical_data(from_date=previous_date.strftime('%d/%m/%Y'), to_date=date.strftime('%d/%m/%Y'))
+        prices[etf] = data.loc[date_str, 'Close']
+
+    for cross in currency_crosses:
+        data  = investpy.get_currency_cross_historical_data(cross, from_date=previous_date.strftime('%d/%m/%Y'), to_date=date.strftime('%d/%m/%Y'))
+        prices[cross.replace('/RUB', '')] = data.loc[date_str, 'Close']
+
+    data = ''
+    for ticker in prices:
+        data += f'{date_str} price {ticker} {prices[ticker]} RUB\n'
+
+
+    prices_file_dir = DEFAULT_PRICES_DIR + '/' + date_year
+    prices_file = prices_file_dir + '/' + date_str + '.bean'
+
+    if not os.path.exists(prices_file_dir):
+        os.makedirs(prices_file_dir)
+
+    with open(prices_file, 'w') as file_object:
+        file_object.write(data)
+
+
+
 if __name__ == "__main__":
     args = docopt(__doc__)
     # print(args)
+
+    if args['download-prices']:
+        date = get_date(args['--date'])
+        download_prices(date)
+        exit(0)
 
     if args['add']:
         date = get_date(args['--date'])
