@@ -9,6 +9,7 @@ Usage:
   moneyctl.py assets [options]
   moneyctl.py invest <report> [options]
   moneyctl.py download-prices [options]
+  moneyctl.py split <currency> <rate>
 
 Invest Reports:
   assets
@@ -26,10 +27,14 @@ Options:
   -E, --end END_DATE          Set end of range for report
   -j, --journal JOURNAL_FILE  Set journal file to load
 
+Examples:
+  moneyctl.py split FXUS 100
+
 """
 
 
 import os
+import re
 import sys
 import queue
 import investpy
@@ -661,10 +666,71 @@ def download_prices(date):
         file_object.write(data)
 
 
+def split_currency(currency, rate):
+
+    def rate_price(old_price):
+        new_price = float(old_price) / rate
+        return f'{new_price:.8}'
+
+    def rate_num(old_num):
+        new_num = int(old_num) * rate
+        return f'{new_num}'
+
+    price_regex = re.compile(f'^[-0-9]+ +price +{currency} +([-\.0-9]+) +')
+    num_regex = re.compile(f'.* +([-\.0-9]+) +{currency} +@@')
+
+    files = []
+    for dirpath, dnames, fnames in os.walk(DEFAULT_JOURNAL_DIR):
+        for f in fnames:
+            if (
+                    f.endswith('.bean')
+                    and not 'template' in dirpath
+                    and not 'accounts' in dirpath
+                    and not 'commodities' in dirpath
+                ):
+                files.append(os.path.join(dirpath, f))
+
+    for file in files:
+        content = ''
+        changes = False
+        lines = []
+
+        with open(file, 'r') as file_object:
+            lines = file_object.readlines()
+
+        for line in lines:
+
+            updated_line = line
+
+            price_match = price_regex.match(line)
+            if price_match:
+                old_price = price_match.group(1)
+                new_price = rate_price(old_price)
+                updated_line = line.replace(old_price, new_price)
+
+            num_match = num_regex.match(line)
+            if num_match:
+                old_num = num_match.group(1)
+                new_num = rate_num(old_num)
+                updated_line = line.replace(old_num, new_num, 1)
+
+            if updated_line != line:
+                changes = True
+
+            content += updated_line
+
+        if changes:
+            with open(file, 'w') as file_object:
+                file_object.write(content)
+
 
 if __name__ == "__main__":
     args = docopt(__doc__)
     # print(args)
+
+    if args['split']:
+        split_currency(args['<currency>'], int(args['<rate>']))
+        exit(0)
 
     if args['download-prices']:
         date = get_date(args['--date'])
