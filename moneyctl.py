@@ -48,7 +48,7 @@ from beautifultable import BeautifulTable
 from beancount.query.query import run_query
 
 
-DEFAULT_JOURNAL_DIR = '/home/user/documents/beancount'
+DEFAULT_JOURNAL_DIR = '/home/user/git/money'
 DEFAULT_JOURNAL_FILE = DEFAULT_JOURNAL_DIR + '/main.bean'
 DEFAULT_TEMPLATE_DIR = DEFAULT_JOURNAL_DIR + '/templates'
 DEFAULT_PRICES_DIR = DEFAULT_JOURNAL_DIR + '/prices'
@@ -724,9 +724,31 @@ def split_currency(currency, rate):
                 file_object.write(content)
 
 
+def git_crypt_unlocked():
+    status_file = DEFAULT_JOURNAL_DIR + "/.git-crypt.status"
+
+    if os.path.isfile(status_file):
+
+        status = ''
+        with open(status_file, 'rb') as file:
+            status = file.readline()
+
+        if status.startswith(b'unlocked'):
+            return True
+        else:
+            return False
+
+    else:
+        return True
+
+
 if __name__ == "__main__":
     args = docopt(__doc__)
     # print(args)
+
+    if not git_crypt_unlocked():
+        print('Error: Repo is locked')
+        exit(1)
 
     if args['split']:
         split_currency(args['<currency>'], int(args['<rate>']))
