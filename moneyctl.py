@@ -353,10 +353,12 @@ def invest_profit_report(bean):
         account_rub_get = 0
         account_usd_put = 0
         account_usd_get = 0
+        position_number = 0
 
         for i in range(accounts[account].qsize()):
             bond = accounts[account].get()
             rub_diff = bond['price_rub_today'] - bond['price_rub_date']
+            position_number += 1
            
             # считаем профит в рублях
             rub_profit = rub_diff
@@ -370,25 +372,26 @@ def invest_profit_report(bean):
             account_usd_get += (bond['price_rub_date'] + rub_profit) / bond['usd_today']
 
         
-        total_rub_put += account_rub_put
-        total_rub_get += account_rub_get
-        total_usd_put += account_usd_put
-        total_usd_get += account_usd_get
+        if position_number != 0:
+            total_rub_put += account_rub_put
+            total_rub_get += account_rub_get
+            total_usd_put += account_usd_put
+            total_usd_get += account_usd_get
 
-        account_rub_profit = account_rub_get - account_rub_put
-        account_usd_profit = account_usd_get - account_usd_put
+            account_rub_profit = account_rub_get - account_rub_put
+            account_usd_profit = account_usd_get - account_usd_put
 
-        account_rub_profit_persent = (account_rub_get / account_rub_put - 1) * 100
-        account_usd_profit_persent = (account_usd_get / account_usd_put - 1) * 100
+            account_rub_profit_persent = (account_rub_get / account_rub_put - 1) * 100
+            account_usd_profit_persent = (account_usd_get / account_usd_put - 1) * 100
 
 
-        account_rub_profit_str = colored(f'{int(account_rub_profit):_}' + " RUB", attrs=['dark'])
-        account_usd_profit_str = f'{int(account_usd_profit):_}' + " USD"
+            account_rub_profit_str = colored(f'{int(account_rub_profit):_}' + " RUB", attrs=['dark'])
+            account_usd_profit_str = f'{int(account_usd_profit):_}' + " USD"
 
-        account_rub_profit_persent_str = colored(f'{account_rub_profit_persent:.2f} % RUB', attrs=['dark'])
-        account_usd_profit_persent_str = f'{account_usd_profit_persent:.2f} % USD'
+            account_rub_profit_persent_str = colored(f'{account_rub_profit_persent:.2f} % RUB', attrs=['dark'])
+            account_usd_profit_persent_str = f'{account_usd_profit_persent:.2f} % USD'
 
-        table.rows.append([account, account_rub_profit_str, account_rub_profit_persent_str, account_usd_profit_str, account_usd_profit_persent_str])
+            table.rows.append([account, account_rub_profit_str, account_rub_profit_persent_str, account_usd_profit_str, account_usd_profit_persent_str])
 
     total_rub_profit = total_rub_get - total_rub_put
     total_usd_profit = total_usd_get - total_usd_put
@@ -451,13 +454,14 @@ def invest_part_report(bean):
     table.set_style(BeautifulTable.STYLE_MARKDOWN)
 
     for currency in currencies:
-        position = int(currencies[currency])
-        percent = position / total * 100
+        if currencies_num[currency] != 0:
+            position = int(currencies[currency])
+            percent = position / total * 100
 
-        position_str = colored(f'{position:_} RUB', attrs=['dark'])
-        percent_str = f'{percent:.2f} %'
+            position_str = colored(f'{position:_} RUB', attrs=['dark'])
+            percent_str = f'{percent:.2f} %'
 
-        table.rows.append([currency, currencies_num[currency], position_str, percent_str])
+            table.rows.append([currency, currencies_num[currency], position_str, percent_str])
 
     print('')
     print(table)
@@ -534,13 +538,15 @@ def invest_assets_report(bean):
             account_rub_get += bond['price_rub_date'] + rub_profit
             account_usd_get += (bond['price_rub_date'] + rub_profit) / bond['usd_today']
 
-        total_rub_get += account_rub_get
-        total_usd_get += account_usd_get
+        if position_number != 0:
 
-        account_rub_get_str = f'{int(account_rub_get):_} RUB'
-        account_usd_get_str = f'{int(account_usd_get):_} USD'
+            total_rub_get += account_rub_get
+            total_usd_get += account_usd_get
 
-        table.rows.append([account, position_number, account_rub_get_str,account_usd_get_str])
+            account_rub_get_str = f'{int(account_rub_get):_} RUB'
+            account_usd_get_str = f'{int(account_usd_get):_} USD'
+
+            table.rows.append([account, position_number, account_rub_get_str,account_usd_get_str])
 
     total_rub_get_str = colored(f'{int(total_rub_get):_} RUB', attrs=['bold'])
     total_usd_get_str = colored(f'{int(total_usd_get):_} USD', attrs=['bold'])
