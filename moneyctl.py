@@ -645,7 +645,7 @@ def download_prices(date):
 
     prices = {}
 
-    etfs = ['FXUS', 'FXIM', 'FXRU', 'FXIT', 'FXRB']
+    etfs = ['FXUS', 'FXIM', 'FXIT']
     currency_crosses = ['USD/RUB']
 
     for etf in etfs:
