@@ -300,7 +300,12 @@ def invest_profit_report(bean):
         GETPRICE("USD", "RUB", date) as usd_date,
         GETPRICE("USD", "RUB", TODAY()) as usd_today
     WHERE
-        account ~ "Инвестиции" AND currency != "RUB" AND currency != "USD";
+        account ~ "Инвестиции"
+        AND currency != "RUB"
+        AND currency != "USD"
+        AND currency != "FXUS"
+        AND currency != "FXIT"
+        AND currency != "FXIM";
     '''
 
     accounts = {}
@@ -412,6 +417,7 @@ def invest_profit_report(bean):
 
     print('')
     print(table)
+    print(colored("\n Finex ETFs were hidden from this report", attrs=['dark']))
 
 
 def invest_part_report(bean):
@@ -421,7 +427,11 @@ def invest_part_report(bean):
 	    SUM(number) as num,
             SUM(number) * FIRST(GETPRICE(currency, "RUB", TODAY())) as sum
 	WHERE
-	    account ~ "Assets:Инвестиции" AND currency != "RUB"
+	    account ~ "Assets:Инвестиции"
+	    AND currency != "RUB"
+	    AND currency != "FXUS"
+	    AND currency != "FXIT"
+	    AND currency != "FXIM"
         ORDER BY sum, currency DESC
     '''
 
@@ -465,6 +475,7 @@ def invest_part_report(bean):
 
     print('')
     print(table)
+    print(colored("\n Finex ETFs were hidden from this report", attrs=['dark']))
 
 
 def invest_assets_report(bean):
@@ -476,7 +487,12 @@ def invest_assets_report(bean):
         GETPRICE(currency, "RUB", TODAY()) as price_rub_today,
         GETPRICE("USD", "RUB", TODAY()) as usd_today
     WHERE
-        account ~ "Инвестиции" AND currency != "RUB" AND currency != "USD";
+        account ~ "Инвестиции"
+        AND currency != "RUB"
+        AND currency != "USD"
+        AND currency != "FXUS"
+        AND currency != "FXIT"
+        AND currency != "FXIM";
     '''
 
     accounts = {}
@@ -558,6 +574,7 @@ def invest_assets_report(bean):
 
     print('')
     print(table)
+    print(colored("\n Finex ETFs were hidden from this report", attrs=['dark']))
 
 
 def invest_cash_report(bean):
