@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "moneyctl"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+beautifultable = "^1.1.0"
+termcolor = "^2.2.0"
+investpy = "^1.0.8"
+docopt = "^0.6.2"
+beancount = "^2.3.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
