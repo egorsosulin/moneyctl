@@ -10,9 +10,7 @@ function build-bin {
     container="fedora:37"
 
     $CONTAINER_CMD run --rm -ti -v $(pwd):/repo -w /repo $container /bin/bash -c "
-        dnf -y install python3-devel python3-pip poetry && \
-        dnf -y group install 'C Development Tools and Libraries' && \
-        \
+        dnf -y install make automake gcc gcc-c++ kernel-devel python3-devel python3-pip poetry && \
         pip3 install pyinstaller && \
         \
         poetry export | pip3 install -r /dev/stdin && \

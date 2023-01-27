@@ -7,6 +7,7 @@ Summary:        CLI finance management application based on Beancount
 %description
 CLI finance management application based on Beancount
 
+%define _build_id_links none
 
 %install
 mkdir -p %{buildroot}%{_bindir}

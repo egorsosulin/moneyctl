@@ -48,7 +48,7 @@ from beautifultable import BeautifulTable
 from beancount.query.query import run_query
 
 
-DEFAULT_JOURNAL_DIR = '/home/user/git/money'
+DEFAULT_JOURNAL_DIR = '/home/user/Git/money'
 DEFAULT_JOURNAL_FILE = DEFAULT_JOURNAL_DIR + '/main.bean'
 DEFAULT_TEMPLATE_DIR = DEFAULT_JOURNAL_DIR + '/templates'
 DEFAULT_PRICES_DIR = DEFAULT_JOURNAL_DIR + '/prices'
@@ -632,7 +632,7 @@ def add_transaction(template_name, date, cost):
             template_data = file_object.read().format(DATE=date_str, COST=cost)
     else:
         print('Error: Template does not exist: ' + template_name)
-        exit(1)
+        sys.exit(1)
 
     journal_date_data = ''
     journal_date_dir  = DEFAULT_JOURNAL_DIR + '/journals/' + date_year
@@ -771,23 +771,23 @@ if __name__ == "__main__":
 
     if not git_crypt_unlocked():
         print('Error: Repo is locked')
-        exit(1)
+        sys.exit(1)
 
     if args['split']:
         split_currency(args['<currency>'], int(args['<rate>']))
-        exit(0)
+        sys.exit(0)
 
     if args['download-prices']:
         date = get_date(args['--date'])
         download_prices(date)
-        exit(0)
+        sys.exit(0)
 
     if args['add']:
         date = get_date(args['--date'])
 
         if args['--cost'] is None:
             print('Error: Cost does not specify')
-            exit(1)
+            sys.exit(1)
 
         journal_date_file = add_transaction(args['<template>'], date, args['--cost'])
 
@@ -795,7 +795,7 @@ if __name__ == "__main__":
             editor = os.environ['EDITOR']
             os.execvp(editor, [editor, journal_date_file])
 
-        exit(0)
+        sys.exit(0)
 
     journal = DEFAULT_JOURNAL_FILE
     if args['--journal']:
