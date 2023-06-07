@@ -1,0 +1,4 @@
+---
+comment: "Зарплата"
+account_from: "Income:Работа"
+account_to: "Assets:Карты:Sberbank-0001"

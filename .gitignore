@@ -1,3 +1,4 @@
-*.bin
-*.rpm
-.venv
+.*
+!/.gitignore
+__pycache__
+*.bkp

@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 
 """MoneyCTL.
@@ -64,7 +65,7 @@ class BeancountWrapper():
 
 
 def get_date(date_str):
-    if date_str == None:
+    if date_str is None:
         return date.today()
     else:
         return date.fromisoformat(date_str)
@@ -117,7 +118,7 @@ def expenses_report(bean, begin, end):
     end_str = end.strftime('%Y-%m-%d')
 
     q = f'''
-        SELECT 
+        SELECT
             account,
             currency,
             sum(number(convert(position, "RUB", date))) as position_rub,
@@ -132,7 +133,7 @@ def expenses_report(bean, begin, end):
     account_header = colored("ACCOUNT", attrs=['bold'])
     position_rub_header = colored("POSITION RUB", attrs=['bold'])
     position_usd_header = colored("POSITION USD", attrs=['bold'])
-    
+
     table.columns.header = [account_header, position_rub_header, position_usd_header]
     table.columns.alignment[account_header] = BeautifulTable.ALIGN_LEFT
     table.columns.alignment[position_rub_header] = BeautifulTable.ALIGN_RIGHT
@@ -236,7 +237,7 @@ def income_report(bean, begin, end):
 def assets_report(bean):
     today = date.today().strftime('%Y-%m-%d')
     q = f'''
-        SELECT 
+        SELECT
             account,
             currency,
             sum(number(convert(position, "RUB", TODAY()))) as position_rub,
@@ -324,7 +325,7 @@ def invest_profit_report(bean):
 
         if account not in accounts:
             accounts[account] = queue.Queue()
-        
+
         for i in range(abs(number)):
             if number > 0:
                 accounts[account].put(bond)
@@ -364,7 +365,7 @@ def invest_profit_report(bean):
             bond = accounts[account].get()
             rub_diff = bond['price_rub_today'] - bond['price_rub_date']
             position_number += 1
-           
+
             # считаем профит в рублях
             rub_profit = rub_diff
             if rub_diff > 0:
@@ -376,7 +377,7 @@ def invest_profit_report(bean):
             account_usd_put += bond['price_rub_date'] / bond['usd_date']
             account_usd_get += (bond['price_rub_date'] + rub_profit) / bond['usd_today']
 
-        
+
         if position_number != 0:
             total_rub_put += account_rub_put
             total_rub_get += account_rub_get
@@ -707,9 +708,9 @@ def split_currency(currency, rate):
         for f in fnames:
             if (
                     f.endswith('.bean')
-                    and not 'template' in dirpath
-                    and not 'accounts' in dirpath
-                    and not 'commodities' in dirpath
+                    and 'template' not in dirpath
+                    and 'accounts' not in dirpath
+                    and 'commodities' not in dirpath
                 ):
                 files.append(os.path.join(dirpath, f))
 
@@ -778,18 +779,18 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if args['download-prices']:
-        date = get_date(args['--date'])
-        download_prices(date)
+        date_ = get_date(args['--date'])
+        download_prices(date_)
         sys.exit(0)
 
     if args['add']:
-        date = get_date(args['--date'])
+        date_ = get_date(args['--date'])
 
         if args['--cost'] is None:
             print('Error: Cost does not specify')
             sys.exit(1)
 
-        journal_date_file = add_transaction(args['<template>'], date, args['--cost'])
+        journal_date_file = add_transaction(args['<template>'], date_, args['--cost'])
 
         if args['--edit']:
             editor = os.environ['EDITOR']

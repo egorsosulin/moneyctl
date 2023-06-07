@@ -1,0 +1,8 @@
+**/*.fish
+**/*.rpm.spec
+**/*.drawio
+**/*.md
+.*
+tasks.py
+tests
+misc
