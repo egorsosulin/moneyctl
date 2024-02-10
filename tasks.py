@@ -24,11 +24,7 @@ def poetry_install(c):
 @task(pre=[poetry_lock])
 def docker_build_image(c):
     """Build docker image"""
-    image = c.docker.image_name
-    c.run(
-        f"docker images | grep {image} 1>/dev/null 2>/dev/null" +
-        f" || docker build -t {image} ."
-    )
+    c.run(f"docker build -t {c.docker.image_name} .")
 
 
 @task(pre=[docker_build_image])

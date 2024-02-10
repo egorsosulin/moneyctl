@@ -171,8 +171,6 @@ def assets(ctx, empty_accounts):
 ### Additional Functions ------------------------------------------------------
 
 def args_to_timerange(from_, to, year, month) -> date:
-    y = date.today().year
-    m = date.today().month
 
     # Only "from" and "to" arguments are set
     if from_ != None and to != None and year == None and month == None:
@@ -184,25 +182,31 @@ def args_to_timerange(from_, to, year, month) -> date:
     elif from_ == None and to == None and year != None and month != None:
         y = year
         m = month
+        _, last_month_day = monthrange(y, m)
+        return date(y, m, 1), date(y, m, last_month_day)
 
     # Only "month" argument is set
     elif from_ == None and to == None and year == None and month != None:
+        y = date.today().year
         m = month
+        _, last_month_day = monthrange(y, m)
+        return date(y, m, 1), date(y, m, last_month_day)
 
     # Only "year" arguments is set
     elif from_ == None and to == None and year != None and month == None:
-        y = year
+        _, last_december_day = monthrange(year, 12)
+        return date(year, 1, 1), date(year, 12, last_december_day)
 
-    # No arguments are set -- use current month begin-end as timerange
+    # No arguments are set -- use current month as timerange
     elif from_ == None and to == None and year == None and month == None:
-        pass
+        y = date.today().year
+        m = date.today().month
+        _, last_month_day = monthrange(y, m)
+        return date(y, m, 1), date(y, m, last_month_day)
 
     # Incorrect arguments combination
     else:
         raise CliException('Incorrect time range arguments combination')
-
-    _, last_month_day = monthrange(y, m)
-    return date(y, m, 1), date(y, m, last_month_day)
 
 
 ### Report Command: Expenses --------------------------------------------------

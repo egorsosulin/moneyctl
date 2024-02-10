@@ -16,6 +16,7 @@ COPY --from=build /build/.venv /build/.venv
 ENV PATH=/build/.venv/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/opt
 COPY moneyctl /opt/moneyctl
-RUN ln -s /opt/moneyctl/__main__.py /usr/local/bin/moneyctl
+RUN ln -s /opt/moneyctl/__main__.py /usr/local/bin/moneyctl && \
+    moneyctl --help
 
 ENTRYPOINT ["/usr/local/bin/moneyctl"]
